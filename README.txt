@@ -84,3 +84,4 @@ CREDITS
 Shaysters is the creator of the mod.
 Claude was used for AI-assisted development.
 The installer is built with Loadstone by Bradley Renshaw: https://github.com/bradjrenshaw/loadstone
+Speech uses Prism by Ethin Probst, licensed under the Mozilla Public License 2.0: https://github.com/ethindp/prism
