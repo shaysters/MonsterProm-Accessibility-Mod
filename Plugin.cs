@@ -28,13 +28,13 @@ namespace MonsterPromAccessibility
                     "Speech",
                     "PreferredProvider",
                     "",
-                    "Speech provider: Tolk, Orca, SAPI, or blank for auto-detect.");
+                    "Prism speech backend: NVDA, JAWS, SAPI, OneCore, etc., or blank for auto-detect.");
 
                 _sapiRate = Config.Bind(
                     "Speech",
                     "SAPIRate",
                     0,
-                    "SAPI speech rate. Range: -10 (slowest) to 10 (fastest). Default: 0. Only applies when SAPI is the active provider.");
+                    "Speech rate. Range: -10 (slowest) to 10 (fastest). Default: 0. Only applies when Windows speech (SAPI or OneCore) is in use, not screen readers.");
 
                 Speech = new SpeechRouter(Log);
                 Speech.PreferredProvider = _preferredProvider.Value;

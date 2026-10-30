@@ -1,0 +1,9 @@
+{
+  "mode": "single-mod",
+  "mod": "monster-prom-accessibility",
+  "title": "Monster Prom Accessibility Installer",
+  "registries": [
+    "github:shaysters/MonsterProm-Accessibility-Mod"
+  ],
+  "lockRegistries": true
+}

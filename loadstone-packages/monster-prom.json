@@ -1,0 +1,15 @@
+{
+  "manifestVersion": 1,
+  "kind": "game",
+  "id": "monster-prom",
+  "name": "Monster Prom",
+  "detect": {
+    "steam": {
+      "appId": 743450,
+      "dirName": "Monster Prom"
+    },
+    "markers": [
+      "MonsterProm.exe"
+    ]
+  }
+}

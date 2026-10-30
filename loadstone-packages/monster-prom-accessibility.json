@@ -1,0 +1,69 @@
+{
+  "manifestVersion": 1,
+  "id": "monster-prom-accessibility",
+  "name": "Monster Prom Accessibility",
+  "description": "Screen reader and text-to-speech accessibility for Monster Prom. Speaks menus, dialogue, choices, stats, shops, turns and cafeteria tables, and reads the online code when you host.",
+  "authors": [
+    "Shaysters",
+    "Claude"
+  ],
+  "game": "monster-prom",
+  "distributions": {
+    "steam": "supported"
+  },
+  "dependencies": [
+    {
+      "id": "bepinex-5-win-x86"
+    }
+  ],
+  "channels": {
+    "stable": {
+      "source": "release"
+    }
+  },
+  "install": [
+    {
+      "step": "ensure-dirs",
+      "paths": [
+        "${gameDir}/BepInEx/plugins"
+      ]
+    },
+    {
+      "step": "extract-archive",
+      "routes": [
+        {
+          "from": "**",
+          "to": "${gameDir}/BepInEx/plugins"
+        }
+      ]
+    },
+    {
+      "step": "expect",
+      "checks": [
+        {
+          "fileExists": "${gameDir}/BepInEx/plugins/MonsterPromAccessibility.dll",
+          "message": "The download didn't contain the mod (no MonsterPromAccessibility.dll)."
+        },
+        {
+          "fileExists": "${gameDir}/BepInEx/plugins/prism.dll",
+          "message": "The download didn't contain the speech library (no prism.dll)."
+        }
+      ]
+    }
+  ],
+  "cleanupLegacy": [
+    "${gameDir}/BepInEx/plugins/Tolk.dll",
+    "${gameDir}/BepInEx/plugins/nvdaControllerClient32.dll",
+    "${gameDir}/BepInEx/plugins/nvdaControllerClient64.dll"
+  ],
+  "userData": [
+    "${gameDir}/BepInEx/config/com.accessibility.monsterprom.cfg"
+  ],
+  "packaging": {
+    "artifacts": [
+      {
+        "file": "../dist/MonsterPromAccessibility.zip"
+      }
+    ]
+  }
+}

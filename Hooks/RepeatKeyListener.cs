@@ -11,7 +11,8 @@ namespace MonsterPromAccessibility.Hooks
     // Controller: Left Bumper  — same repeat function.
     //
     // Keyboard:   E key        — reads current player's stat values aloud.
-    // Keyboard:   F4 / F5      — decrease / increase SAPI speech rate (SAPI only).
+    // Keyboard:   F4 / F5      — decrease / increase speech rate (Windows speech only, not screen readers).
+    // Keyboard:   C key        — reads the online lobby code again.
     //
     // Controller cold-start fix (main menu only):
     //     NGUI requires selectedObject to be non-null before controller navigation
@@ -42,11 +43,17 @@ namespace MonsterPromAccessibility.Hooks
             if (Input.GetKeyDown(KeyCode.E))
                 SpeakCurrentStats();
 
-            // F4 / F5 — decrease / increase SAPI speech rate.
+            // F4 / F5 — decrease / increase speech rate.
             if (Input.GetKeyDown(KeyCode.F4))
                 _speech.AdjustSapiRate(-1);
             if (Input.GetKeyDown(KeyCode.F5))
                 _speech.AdjustSapiRate(1);
+
+            // C — re-read the online lobby code.
+            if (Input.GetKeyDown(KeyCode.C))
+                OnlineCodeHooks.SpeakCurrentCode();
+
+            OnlineCodeHooks.Tick();
 
             if (UICamera.current == null) return;
 

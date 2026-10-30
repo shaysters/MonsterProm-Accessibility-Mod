@@ -320,6 +320,10 @@ namespace MonsterPromAccessibility.Hooks
 
             string name = btn.gameObject.name;
 
+            // 0. Cafeteria tables — "Table 2: Vera, Liam. 2 seats free."
+            Match table = _tableButtonPattern.Match(name);
+            if (table.Success) return CafeteriaTableDescriber.Describe(int.Parse(table.Groups[1].Value));
+
             // 1. Hand-written hint — most authoritative.
             string hint;
             if (ButtonHints.TryGetValue(name, out hint)) return hint;
@@ -393,6 +397,8 @@ namespace MonsterPromAccessibility.Hooks
         // These buttons have no UILabel children — the NPC name lives in NpcNameLabel
         // on EndingChooseNpcManager, which is updated by HoverNpcX() methods.
         // GameFlowHooks.HoverNpcX patches handle the announcement; suppress here.
+        private static readonly Regex _tableButtonPattern = new Regex(@"^Table([1-5])Button$", RegexOptions.Compiled);
+
         private static readonly Regex _npcPromButtonPattern = new Regex(
             @"^NpcPromButton\d+$",
             RegexOptions.Compiled);
