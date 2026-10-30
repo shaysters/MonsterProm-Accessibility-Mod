@@ -1,4 +1,4 @@
-# Monster Prom Accessibility 1.0.0
+# Monster Prom Accessibility 1.1.2
 
 Run **MonsterPromAccessibilityInstaller.exe** to install, update, repair, or uninstall. Close the game first. It installs BepInEx if it is missing, then the mod, and removes files left by older versions. You can still install by hand from the zip; see the README.
 
