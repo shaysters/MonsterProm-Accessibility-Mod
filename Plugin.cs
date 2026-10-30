@@ -9,7 +9,7 @@ using MonsterPromAccessibility.Speech;
 
 namespace MonsterPromAccessibility
 {
-    [BepInPlugin("com.accessibility.monsterprom", "Monster Prom Accessibility", "1.1.2")]
+    [BepInPlugin("com.accessibility.monsterprom", "Monster Prom Accessibility", "1.1.3")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log;

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.3 - 2026-10-30
 
 ### Fixed
 - The mod was silent in 1.1.2: Prism could not be loaded by the game's older runtime. Speech works again.
