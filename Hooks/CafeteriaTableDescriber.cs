@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using HarmonyLib;
 using NGameConstants;
@@ -15,8 +16,8 @@ namespace MonsterPromAccessibility.Hooks
     {
         private const int SeatsPerTable = 4;
 
-        private static readonly AccessTools.FieldRef<GameManager, Dictionary<string, string>> SeatsRef =
-            AccessTools.FieldRefAccess<GameManager, Dictionary<string, string>>("mAllCharactersInCafeteriaTables");
+        private static readonly FieldInfo SeatsField =
+            AccessTools.Field(typeof(GameManager), "mAllCharactersInCafeteriaTables");
 
         // English display names for ids that aren't a single capitalised word.
         private static readonly Dictionary<string, string> EnglishNames = new Dictionary<string, string>
@@ -34,7 +35,7 @@ namespace MonsterPromAccessibility.Hooks
             try
             {
                 if (GameManager.Instance == null) return fallback;
-                Dictionary<string, string> seats = SeatsRef(GameManager.Instance);
+                Dictionary<string, string> seats = SeatsField?.GetValue(GameManager.Instance) as Dictionary<string, string>;
                 if (seats == null) return fallback;
 
                 string prefix = $"Table{tableNumber}_";

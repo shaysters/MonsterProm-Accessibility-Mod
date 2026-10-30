@@ -12,9 +12,11 @@ namespace MonsterPromAccessibility.Speech.Providers
     // otherwise Windows TTS (SAPI / OneCore).
     //
     // The prismatoid .NET bindings need a newer runtime than Unity Mono, so this is a
-    // minimal P/Invoke wrapper over Prism's C API. prism.dll (32-bit) is loaded via
-    // LoadLibrary with the full path to the plugins folder first, so the [DllImport]
-    // calls below resolve to that already-loaded module.
+    // minimal wrapper over Prism's C API. prism.dll (32-bit) is loaded via LoadLibrary
+    // with the full path to the plugins folder, and each export is bound through
+    // GetProcAddress. [DllImport("prism.dll")] can't be used: Monster Prom's old
+    // Mono (.NET 2.0 runtime) searches only its own paths and throws
+    // DllNotFoundException even when the module is already loaded.
     public class PrismProvider : ISpeechProvider
     {
         private const string PrismLib = "prism.dll";
@@ -27,53 +29,63 @@ namespace MonsterPromAccessibility.Speech.Providers
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern IntPtr LoadLibraryW(string lpFileName);
 
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr prism_init(IntPtr cfg);
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void prism_shutdown(IntPtr ctx);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate IntPtr CtxFromPtrFn(IntPtr ptr);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate void VoidFromPtrFn(IntPtr ptr);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate UIntPtr SizeFromPtrFn(IntPtr ptr);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate ulong IdAtFn(IntPtr ctx, UIntPtr index);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate IntPtr PtrFromIdFn(IntPtr ctx, ulong id);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate ulong UlongFromPtrFn(IntPtr ptr);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate int IntFromPtrFn(IntPtr ptr);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate int SpeakFn(IntPtr backend, byte[] text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate int SetFloatFn(IntPtr backend, float value);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate IntPtr ErrorStringFn(int error);
 
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr prism_registry_count(IntPtr ctx);
+        private static CtxFromPtrFn prism_init;
+        private static VoidFromPtrFn prism_shutdown;
+        private static SizeFromPtrFn prism_registry_count;
+        private static IdAtFn prism_registry_id_at;
+        private static PtrFromIdFn prism_registry_name;
+        private static PtrFromIdFn prism_registry_acquire;
+        private static CtxFromPtrFn prism_registry_acquire_best;
+        private static VoidFromPtrFn prism_backend_free;
+        private static CtxFromPtrFn prism_backend_name;
+        private static UlongFromPtrFn prism_backend_get_features;
+        private static IntFromPtrFn prism_backend_initialize;
+        private static SpeakFn prism_backend_speak;
+        private static SpeakFn prism_backend_output;
+        private static IntFromPtrFn prism_backend_stop;
+        private static SetFloatFn prism_backend_set_rate;
+        private static ErrorStringFn prism_error_string;
 
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern ulong prism_registry_id_at(IntPtr ctx, UIntPtr index);
+        private static T Bind<T>(IntPtr module, string name) where T : class
+        {
+            IntPtr proc = GetProcAddress(module, name);
+            if (proc == IntPtr.Zero) throw new EntryPointNotFoundException(name);
+            return Marshal.GetDelegateForFunctionPointer(proc, typeof(T)) as T;
+        }
 
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr prism_registry_name(IntPtr ctx, ulong id);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr prism_registry_acquire(IntPtr ctx, ulong id);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr prism_registry_acquire_best(IntPtr ctx);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void prism_backend_free(IntPtr backend);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr prism_backend_name(IntPtr backend);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern ulong prism_backend_get_features(IntPtr backend);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int prism_backend_initialize(IntPtr backend);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int prism_backend_speak(IntPtr backend, byte[] text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int prism_backend_output(IntPtr backend, byte[] text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int prism_backend_stop(IntPtr backend);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int prism_backend_set_rate(IntPtr backend, float rate);
-
-        [DllImport(PrismLib, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr prism_error_string(int error);
+        private static void BindAll(IntPtr module)
+        {
+            prism_init = Bind<CtxFromPtrFn>(module, "prism_init");
+            prism_shutdown = Bind<VoidFromPtrFn>(module, "prism_shutdown");
+            prism_registry_count = Bind<SizeFromPtrFn>(module, "prism_registry_count");
+            prism_registry_id_at = Bind<IdAtFn>(module, "prism_registry_id_at");
+            prism_registry_name = Bind<PtrFromIdFn>(module, "prism_registry_name");
+            prism_registry_acquire = Bind<PtrFromIdFn>(module, "prism_registry_acquire");
+            prism_registry_acquire_best = Bind<CtxFromPtrFn>(module, "prism_registry_acquire_best");
+            prism_backend_free = Bind<VoidFromPtrFn>(module, "prism_backend_free");
+            prism_backend_name = Bind<CtxFromPtrFn>(module, "prism_backend_name");
+            prism_backend_get_features = Bind<UlongFromPtrFn>(module, "prism_backend_get_features");
+            prism_backend_initialize = Bind<IntFromPtrFn>(module, "prism_backend_initialize");
+            prism_backend_speak = Bind<SpeakFn>(module, "prism_backend_speak");
+            prism_backend_output = Bind<SpeakFn>(module, "prism_backend_output");
+            prism_backend_stop = Bind<IntFromPtrFn>(module, "prism_backend_stop");
+            prism_backend_set_rate = Bind<SetFloatFn>(module, "prism_backend_set_rate");
+            prism_error_string = Bind<ErrorStringFn>(module, "prism_error_string");
+        }
 
         private readonly ManualLogSource _log;
         private readonly string _preferredBackend;
@@ -107,12 +119,14 @@ namespace MonsterPromAccessibility.Speech.Providers
             {
                 string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string path = Path.Combine(dir, PrismLib);
-                if (LoadLibraryW(path) == IntPtr.Zero)
+                IntPtr module = LoadLibraryW(path);
+                if (module == IntPtr.Zero)
                 {
                     _log.LogWarning($"[Prism] LoadLibrary failed for: {path} (error {Marshal.GetLastWin32Error()})");
                     return false;
                 }
 
+                BindAll(module);
                 _ctx = prism_init(IntPtr.Zero);
                 if (_ctx == IntPtr.Zero)
                 {
