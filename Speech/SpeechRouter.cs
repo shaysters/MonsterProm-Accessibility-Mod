@@ -12,6 +12,12 @@ namespace MonsterPromAccessibility.Speech
         private readonly List<ISpeechProvider> _providers = new List<ISpeechProvider>();
         private ISpeechProvider _active;
         private string _lastSpoken = string.Empty;
+
+        // Time.realtimeSinceStartup of the last thing spoken, so the update notice can wait for a pause.
+        public float LastSpeakTime { get; private set; }
+
+        // How many lines have been spoken since the game started.
+        public int SpeakCount { get; private set; }
         private ManualLogSource _log;
 
         // User preference: Prism backend name (e.g. NVDA, JAWS, SAPI, OneCore) to
@@ -57,6 +63,8 @@ namespace MonsterPromAccessibility.Speech
             if (!Application.isFocused) return;
             text = text.Replace('\n', ' ').Replace('\r', ' ');
             _lastSpoken = text;
+            LastSpeakTime = Time.realtimeSinceStartup;
+            SpeakCount++;
             _active?.Speak(text, interrupt);
         }
 

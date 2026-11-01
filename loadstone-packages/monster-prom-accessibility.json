@@ -9,7 +9,9 @@
   ],
   "game": "monster-prom",
   "distributions": {
-    "steam": "supported"
+    "steam": "supported",
+    "gog": "untested",
+    "standalone": "untested"
   },
   "dependencies": [
     {

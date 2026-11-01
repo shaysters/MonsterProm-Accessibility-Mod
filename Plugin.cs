@@ -9,9 +9,11 @@ using MonsterPromAccessibility.Speech;
 
 namespace MonsterPromAccessibility
 {
-    [BepInPlugin("com.accessibility.monsterprom", "Monster Prom Accessibility", "1.1.3")]
+    [BepInPlugin("com.accessibility.monsterprom", "Monster Prom Accessibility", Version)]
     public class Plugin : BaseUnityPlugin
     {
+        public const string Version = "1.1.4";
+
         public static ManualLogSource Log;
         public static SpeechRouter Speech;
 
@@ -83,6 +85,9 @@ namespace MonsterPromAccessibility
                 }
 
                 Speech.Speak("Monster Prom accessibility loaded.");
+
+                // Says so on the title screen when a newer release is out.
+                gameObject.AddComponent<UpdateCheck>().Initialize(Speech);
             }
             catch (Exception e)
             {
